@@ -15,4 +15,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-rootProject.name = "ajvm"
+/**
+ * Contains classes for parsing and assembling the AJVM assembly source.
+ */
+package me.albmoriconi.ajvm;
