@@ -28,7 +28,7 @@ import java.util.Map;
 public class Method {
 
     private short parametersSize;
-    private Map<String, Byte> variableTable;
+    private Map<String, Short> variableOffsetTable;
     private List<Instruction> instructions;
 
     /**
@@ -36,7 +36,59 @@ public class Method {
      */
     public Method() {
         parametersSize = 1;
-        variableTable = new HashMap<>();
+        variableOffsetTable = new HashMap<>();
         instructions = new LinkedList<>();
+    }
+
+    /**
+     * Getter for parameterSize
+     *
+     * @return The number of parameters to the method.
+     */
+    public short getParametersSize() {
+        return parametersSize;
+    }
+
+    /**
+     * Setter for parameterSize.
+     *
+     * @param parametersSize The number of parameters to the method.
+     */
+    public void setParametersSize(short parametersSize) {
+        this.parametersSize = parametersSize;
+    }
+
+    /**
+     * Getter for variableOffsetTable
+     *
+     * @return The method variable table that maps (:name -> offset)
+     */
+    public Map<String, Short> getVariableOffsetTable() {
+        return variableOffsetTable;
+    }
+
+    /**
+     * Getter for instructions.
+     *
+     * @return The method instructions.
+     */
+    public List<Instruction> getInstructions() {
+        return instructions;
+    }
+
+    /**
+     * Converts a method to a string.
+     *
+     * @return A {@link String} object that represents the method bits in binary.
+     */
+    @Override public String toString() {
+        StringBuilder methodBuilder = new StringBuilder();
+        methodBuilder.append(ProgramUtils.zeroFilledStringFromShort(parametersSize));
+        methodBuilder.append(ProgramUtils.zeroFilledStringFromShort((short) variableOffsetTable.size()));
+
+        for (Instruction i : instructions)
+            methodBuilder.append(i);
+
+        return methodBuilder.toString();
     }
 }

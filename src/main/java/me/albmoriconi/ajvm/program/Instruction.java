@@ -65,20 +65,15 @@ public class Instruction {
     /**
      * Converts an instruction to string.
      *
-     * @return A string that represents the instruction.
+     * @return A string that represents the instruction bits in binary.
      */
     @Override public String toString() {
         StringBuilder instructionBuilder = new StringBuilder();
-        instructionBuilder.append(zeroFilledStringFromByte(opcode));
+        instructionBuilder.append(ProgramUtils.zeroFilledStringFromByte(opcode));
 
         for (byte operand : operands)
-            instructionBuilder.append(zeroFilledStringFromByte(operand));
+            instructionBuilder.append(ProgramUtils.zeroFilledStringFromByte(operand));
 
         return instructionBuilder.toString();
-    }
-
-    private String zeroFilledStringFromByte(byte b) {
-        // Discard sign extension and extend to the left
-        return String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(" ", "0");
     }
 }

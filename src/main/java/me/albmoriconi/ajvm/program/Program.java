@@ -17,22 +17,67 @@
 
 package me.albmoriconi.ajvm.program;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents an AJVM assembly program.
  */
 public class Program {
 
-    private Map<String, Byte> constantTable;
-    private Map<String, Method> methodTable;
+    private List<Integer> constantValues;
+    private List<Method> methods;
 
     /**
      * Constructor.
      */
     public Program() {
-        constantTable = new HashMap<>();
-        methodTable = new HashMap<>();
+        constantValues = new ArrayList<>(255);
+        methods = new LinkedList<>();
+    }
+
+    /**
+     * Getter for constantValues
+     *
+     * @return The constant area of the program.
+     */
+    public List<Integer> getConstantValues() {
+        return constantValues;
+    }
+
+    /**
+     * Getter for methods
+     *
+     * @return The method area of the program.
+     */
+    public List<Method> getMethods() {
+        return methods;
+    }
+
+    /**
+     * Gets the text of the constant area as a string.
+     *
+     * @return A {@link String} object that represents the costant area of the program in binary.
+     */
+    public String getConstantAreaAsString() {
+        StringBuilder constantAreaBuilder = new StringBuilder();
+
+        for (Integer i : constantValues)
+            constantAreaBuilder.append(ProgramUtils.zeroFilledStringFromInt(i));
+
+        return constantAreaBuilder.toString();
+    }
+
+    /**
+     * Gets the text of the method area as a string.
+     *
+     * @return A {@link String} object that represents the method area of the program in binary.
+     */
+    public String getMethodAreaAsString() {
+        StringBuilder methodAreaBuilder = new StringBuilder();
+
+        for (Method m : methods)
+            methodAreaBuilder.append(m);
+
+        return methodAreaBuilder.toString();
     }
 }
