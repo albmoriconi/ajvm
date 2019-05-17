@@ -19,6 +19,8 @@
 
 grammar Ajvm;
 
+// Parser rules
+
 program : constantBlock? methodBlock?;
 
 constantBlock : '.constant' constantDeclaration* '.endconstant';
@@ -27,15 +29,15 @@ constantDeclaration : NAME VALUE;
 
 methodBlock : mainDeclaration methodDeclaration*;
 
-mainDeclaration : '.main' varBlock? labeledInstruction* '.endmethod';
+mainDeclaration : '.main' variableBlock? labeledInstruction* '.endmethod';
 
-methodDeclaration : DOTNAME '(' parBlock? ')' varBlock? instruction* '.endmethod';
+methodDeclaration : DOTNAME '(' parameterBlock? ')' variableBlock? instruction* '.endmethod';
 
-parBlock : parDeclaration (',' parDeclaration)*;
+parameterBlock : parameterDeclaration (',' parameterDeclaration)*;
 
-parDeclaration : NAME;
+parameterDeclaration : NAME;
 
-varBlock : '.var' variableDeclaration* '.endvar';
+variableBlock : '.var' variableDeclaration* '.endvar';
 
 variableDeclaration : NAME;
 
@@ -43,28 +45,43 @@ labeledInstruction : label? instruction;
 
 label : NAME ':';
 
-instruction : 'BIPUSH'          VALUE                   #bipushInstruction
-            | 'DUP'                                     #dupInstruction
-            | 'GOTO'            NAME                    #gotoInstruction
-            | 'HALT'                                    #haltInstruction
-            | 'IADD'                                    #iaddInstruction
-            | 'IAND'                                    #iandInstruction
-            | 'IFEQ'            NAME                    #ifeqInstruction
-            | 'IFLT'            NAME                    #ifltInstruction
-            | 'IF_ICMPEQ'       NAME                    #ificmpeqInstruction
-            | 'IINC'            NAME        VALUE       #iincInstruction
-            | 'ILOAD'           NAME                    #iloadInstruction
-            | 'INVOKEVIRTUAL'   DOTNAME                 #invokeVirtualInstruction
-            | 'IOR'                                     #iorInstruction
-            | 'IRETURN'                                 #ireturnInstruction
-            | 'ISTORE'          NAME                    #istoreInstruction
-            | 'ISUB'                                    #isubInstruction
-            | 'LDC_W'           NAME                    #ldcwInstruction
-            | 'NOP'                                     #nopInstruction
-            | 'POP'                                     #popInstruction
-            | 'SWAP'                                    #swapInstruction
-            | 'WIDE'                                    #wideInstruction
+instruction : NO_OPERAND_MNEMONIC                           #noOperandInstruction
+            | BYTE_VALUE_MNEMONIC VALUE                     #byteValueInstruction
+            | 'WIDE' BYTE_NAME_MNEMONIC NAME                #shortNameInstruction
+            | BYTE_NAME_BYTE_VALUE_MNEMONIC NAME VALUE      #byteNamebyteValueInstruction
+            | SHORT_NAME_MNEMONIC NAME                      #shortNameInstruction
+            | BYTE_NAME_MNEMONIC NAME                       #byteNameInstruction
+            | SHORT_DOTNAME_MNEMONIC DOTNAME                #shortDotnameInstruction
             ;
+
+// Lexer rules
+
+NO_OPERAND_MNEMONIC : 'DUP'
+                    | 'HALT'
+                    | 'IADD'
+                    | 'IAND'
+                    | 'IOR'
+                    | 'IRETURN'
+                    | 'ISUB'
+                    | 'NOP'
+                    | 'POP'
+                    | 'SWAP'
+                    ;
+
+BYTE_VALUE_MNEMONIC : 'BIPUSH';
+
+BYTE_NAME_BYTE_VALUE_MNEMONIC : 'IINC';
+
+SHORT_NAME_MNEMONIC : 'GOTO'
+                    | 'IFEQ'
+                    | 'IFLT'
+                    | 'IF_ICMPEQ'
+                    | 'LDC_W'
+                    ;
+
+BYTE_NAME_MNEMONIC : 'ILOAD' | 'ISTORE';
+
+SHORT_DOTNAME_MNEMONIC : 'INVOKEVIRTUAL';
 
 NAME : NAME_FIRST_CHAR NAME_CHAR*;
 DOTNAME : '.' NAME;

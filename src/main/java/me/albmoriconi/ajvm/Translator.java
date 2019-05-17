@@ -19,13 +19,44 @@ package me.albmoriconi.ajvm;
 
 import me.albmoriconi.ajvm.antlr.AjvmBaseListener;
 import me.albmoriconi.ajvm.antlr.AjvmParser;
+import me.albmoriconi.ajvm.program.Instruction;
 
+import me.albmoriconi.ajvm.program.Program;
 import org.antlr.v4.runtime.tree.ErrorNode;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Listens to events on the parsed AJVM assembly source, producing a translated
  * program.
  */
-public class Translator {
+public class Translator extends AjvmBaseListener {
 
+    private Program translatedProgram;
+    private Map<String, Short> constantOffsetFor;
+    private Map<String, Short> labelOffsetFor;
+    private Map<String, List<Instruction>> instructionsWaitingOn;
+    private int currentWordInMethodArea;
+
+    /**
+     * Constructor.
+     */
+    public Translator() {
+        translatedProgram = new Program();
+        constantOffsetFor = new HashMap<>();
+        labelOffsetFor = new HashMap<>();
+        instructionsWaitingOn = new HashMap<>();
+        currentWordInMethodArea = 0;
+    }
+
+    /**
+     * Getter for translatedProgram
+     *
+     * @return The translated AJVM assembly program.
+     */
+    public Program getTranslatedProgram() {
+        return translatedProgram;
+    }
 }
