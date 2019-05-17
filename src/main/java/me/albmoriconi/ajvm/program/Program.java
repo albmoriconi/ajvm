@@ -15,17 +15,24 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.albmoriconi.ajvm;
+package me.albmoriconi.ajvm.program;
 
-import me.albmoriconi.ajvm.antlr.AjvmBaseListener;
-import me.albmoriconi.ajvm.antlr.AjvmParser;
-
-import org.antlr.v4.runtime.tree.ErrorNode;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Listens to events on the parsed AJVM assembly source, producing a translated
- * program.
+ * Represents an AJVM assembly program.
  */
-public class Translator {
+public class Program {
 
+    private Map<String, Byte> constantTable;
+    private Map<String, Method> methodTable;
+
+    /**
+     * Constructor.
+     */
+    public Program() {
+        constantTable = new HashMap<>();
+        methodTable = new HashMap<>();
+    }
 }

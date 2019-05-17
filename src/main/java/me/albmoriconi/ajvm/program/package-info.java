@@ -15,17 +15,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.albmoriconi.ajvm;
-
-import me.albmoriconi.ajvm.antlr.AjvmBaseListener;
-import me.albmoriconi.ajvm.antlr.AjvmParser;
-
-import org.antlr.v4.runtime.tree.ErrorNode;
-
 /**
- * Listens to events on the parsed AJVM assembly source, producing a translated
- * program.
+ * Contains classes to manage an AJVM assembly program.
  */
-public class Translator {
-
-}
+package me.albmoriconi.ajvm.program;

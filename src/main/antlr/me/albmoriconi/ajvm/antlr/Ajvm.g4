@@ -27,9 +27,9 @@ constantDeclaration : NAME VALUE;
 
 methodBlock : mainDeclaration methodDeclaration*;
 
-mainDeclaration : '.main' varBlock? labeledInstruction* '.end';
+mainDeclaration : '.main' varBlock? labeledInstruction* '.endmethod';
 
-methodDeclaration : DOTNAME varBlock? instruction* '.end';
+methodDeclaration : DOTNAME varBlock? instruction* '.endmethod';
 
 varBlock : '.var' variableDeclaration* '.endvar';
 

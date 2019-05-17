@@ -15,17 +15,28 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.albmoriconi.ajvm;
+package me.albmoriconi.ajvm.program;
 
-import me.albmoriconi.ajvm.antlr.AjvmBaseListener;
-import me.albmoriconi.ajvm.antlr.AjvmParser;
-
-import org.antlr.v4.runtime.tree.ErrorNode;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Listens to events on the parsed AJVM assembly source, producing a translated
- * program.
+ * Represents an IJVM assembly method.
  */
-public class Translator {
+public class Method {
 
+    private short parametersSize;
+    private Map<String, Byte> variableTable;
+    private List<Instruction> instructions;
+
+    /**
+     * Constructor.
+     */
+    public Method() {
+        parametersSize = 1;
+        variableTable = new HashMap<>();
+        instructions = new LinkedList<>();
+    }
 }
