@@ -29,7 +29,11 @@ methodBlock : mainDeclaration methodDeclaration*;
 
 mainDeclaration : '.main' varBlock? labeledInstruction* '.endmethod';
 
-methodDeclaration : DOTNAME varBlock? instruction* '.endmethod';
+methodDeclaration : DOTNAME '(' parBlock? ')' varBlock? instruction* '.endmethod';
+
+parBlock : parDeclaration (',' parDeclaration)*;
+
+parDeclaration : NAME;
 
 varBlock : '.var' variableDeclaration* '.endvar';
 
