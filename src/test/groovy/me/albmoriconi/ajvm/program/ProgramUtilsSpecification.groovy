@@ -19,23 +19,29 @@ package me.albmoriconi.ajvm.program
 
 import spock.lang.*
 
-class MethodSpecification extends Specification {
+class ProgramUtilsSpecification extends Specification {
 
-    def "converting a method to its string representation"() {
-        given:
-        def method = new Method()
-        def instruction = new Instruction()
+    @Unroll
+    def "converting #mnemonic to opcode gives #opcode"() {
+        expect:
+        ProgramUtils.opcodeFor(mnemonic) == opcode
 
-        when:
-        method.setParametersSize((short) 3)
-        method.setVariableSize((short) 4)
-        instruction.setOpcode((byte) 163)
-        instruction.getOperands().add((byte) 42)
-        instruction.getOperands().add((byte) 28)
-        instruction.getOperands().add((byte) 220)
-        method.getInstructions().add(instruction)
+        where:
+        mnemonic    | opcode
+        "IF_ICMPEQ" | (byte) 161
+        "ISUB"      | (byte) 92
+    }
 
-        then:
-        method.toString() == "0000000000000011000000000000010010100011001010100001110011011100"
+    @Unroll
+    def "parsing #string gives #value"() {
+        expect:
+        ProgramUtils.parseIntOrHex(string) == value
+
+        where:
+        string | value
+        "120"  | 120
+        "256"  | 256
+        "0xFF" | 255
+        "0x5B" | 91
     }
 }

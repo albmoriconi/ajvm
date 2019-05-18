@@ -48,7 +48,7 @@ label : NAME ':';
 instruction : NO_OPERAND_MNEMONIC                           #noOperandInstruction
             | BYTE_VALUE_MNEMONIC VALUE                     #byteValueInstruction
             | 'WIDE' BYTE_NAME_MNEMONIC NAME                #shortNameInstruction
-            | BYTE_NAME_BYTE_VALUE_MNEMONIC NAME VALUE      #byteNamebyteValueInstruction
+            | BYTE_NAME_BYTE_VALUE_MNEMONIC NAME VALUE      #byteNameByteValueInstruction
             | SHORT_NAME_MNEMONIC NAME                      #shortNameInstruction
             | BYTE_NAME_MNEMONIC NAME                       #byteNameInstruction
             | SHORT_DOTNAME_MNEMONIC DOTNAME                #shortDotnameInstruction

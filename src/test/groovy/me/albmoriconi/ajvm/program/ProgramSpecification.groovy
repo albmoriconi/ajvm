@@ -30,10 +30,7 @@ class ProgramSpecification extends Specification {
         when:
         program.getConstantValues().add(-1)
         method.setParametersSize((short) 3)
-        method.getVariableOffsetTable().put("var1", (short) 0)
-        method.getVariableOffsetTable().put("var2", (short) 1)
-        method.getVariableOffsetTable().put("var3", (short) 2)
-        method.getVariableOffsetTable().put("var4", (short) 3)
+        method.setVariableSize((short) 4)
         instruction.setOpcode((byte) 163)
         instruction.getOperands().add((byte) 42)
         instruction.getOperands().add((byte) 28)

@@ -17,10 +17,8 @@
 
 package me.albmoriconi.ajvm.program;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents an IJVM assembly method.
@@ -28,7 +26,7 @@ import java.util.Map;
 public class Method {
 
     private short parametersSize;
-    private Map<String, Short> variableOffsetTable;
+    private short variableSize;
     private List<Instruction> instructions;
 
     /**
@@ -36,7 +34,7 @@ public class Method {
      */
     public Method() {
         parametersSize = 1;
-        variableOffsetTable = new HashMap<>();
+        variableSize = 0;
         instructions = new LinkedList<>();
     }
 
@@ -59,12 +57,21 @@ public class Method {
     }
 
     /**
-     * Getter for variableOffsetTable
+     * Getter for variableSize
      *
-     * @return The method variable table that maps (:name -> offset)
+     * @return The number of variables in the method variable area.
      */
-    public Map<String, Short> getVariableOffsetTable() {
-        return variableOffsetTable;
+    public short getVariableSize() {
+        return variableSize;
+    }
+
+    /**
+     * Setter for parameterSize.
+     *
+     * @param variableSize The number of variables in the method variable area.
+     */
+    public void setVariableSize(short variableSize) {
+        this.variableSize = variableSize;
     }
 
     /**
@@ -84,7 +91,7 @@ public class Method {
     @Override public String toString() {
         StringBuilder methodBuilder = new StringBuilder();
         methodBuilder.append(ProgramUtils.zeroFilledStringFromShort(parametersSize));
-        methodBuilder.append(ProgramUtils.zeroFilledStringFromShort((short) variableOffsetTable.size()));
+        methodBuilder.append(ProgramUtils.zeroFilledStringFromShort(variableSize));
 
         for (Instruction i : instructions)
             methodBuilder.append(i);
