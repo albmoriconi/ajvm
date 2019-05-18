@@ -17,6 +17,8 @@
 
 package me.albmoriconi.ajvm.writer;
 
+import me.albmoriconi.ajvm.program.Instruction;
+import me.albmoriconi.ajvm.program.Method;
 import me.albmoriconi.ajvm.program.Program;
 
 import java.io.BufferedOutputStream;
@@ -30,6 +32,8 @@ import java.util.Objects;
  * See {@link #write} for detailed description.
  */
 public class BinaryWriter extends BaseProgramWriter {
+
+    private final static int MAGIC_NUMBER = 1234567890;
 
     private final BufferedOutputStream writer;
 
@@ -45,7 +49,7 @@ public class BinaryWriter extends BaseProgramWriter {
     }
 
     /**
-     * Binary file writer for AJVM assembley program.
+     * Binary file writer for AJVM assembly program.
      *
      * @param program An AJVM assembly program.
      * @param constantAreaStart Address of the first word in the constant area.
@@ -55,6 +59,36 @@ public class BinaryWriter extends BaseProgramWriter {
      */
     @Override public void write(Program program, int constantAreaStart, int methodAreaStart) throws IOException {
         Objects.requireNonNull(program, "Unexpected null reference in BinaryWriter#write");
+        write32(MAGIC_NUMBER);
+        write32(constantAreaStart);
+        write32(methodAreaStart);
+
+        for (int c : program.getConstantValues())
+            write32(c);
+
+        for (Method m : program.getMethods()) {
+            write16(m.getParametersSize());
+            write16(m.getVariableSize());
+            for (Instruction i : m.getInstructions()) {
+                writer.write(i.getOpcode());
+
+                for (byte b : i.getOperands())
+                    writer.write(b);
+            }
+        }
+
         writer.flush();
+    }
+
+    private void write32(int i) throws IOException {
+        writer.write((byte) (i >> 24));
+        writer.write((byte) (i >> 16));
+        writer.write((byte) (i >> 8));
+        writer.write((byte) i);
+    }
+
+    private void write16(short s) throws IOException {
+        writer.write((byte) (s >> 8));
+        writer.write((byte) s);
     }
 }

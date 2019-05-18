@@ -45,7 +45,7 @@ public class TextWriter extends BaseProgramWriter {
     }
 
     /**
-     * Text file writer for AJVM assembley program.
+     * Text file writer for AJVM assembly program.
      *
      * @param program An AJVM assembly program.
      * @param constantAreaStart Address of the first word in the constant area.
@@ -55,6 +55,13 @@ public class TextWriter extends BaseProgramWriter {
      */
     @Override public void write(Program program, int constantAreaStart, int methodAreaStart) throws IOException {
         Objects.requireNonNull(program, "Unexpected null reference in TextWriter#write");
+        writer.write("@" + constantAreaStart + "\n");
+        // Match an empty string that has the last match (\G) followed by 32 characters (32.) before it ((?<= ))
+        // Split according to matches
+        // Join with newlines
+        writer.write(String.join("\n", program.getConstantAreaAsString().split("(?<=\\G32.)")));
+        writer.write("@" + methodAreaStart + "\n");
+        writer.write(String.join("\n", program.getMethodAreaAsString().split("(?<=\\G8.)")));
         writer.flush();
     }
 }
