@@ -68,11 +68,24 @@ public class Translator extends AjvmBaseListener {
     }
 
     /**
-     * {@inheritDoc} TODO Solve dotnames
+     * Solve method invocation offsets.
      *
-     * <p>The default implementation does nothing.</p>
+     * @param ctx The rule invocation context for parsing.
      */
-    @Override public void exitProgram(AjvmParser.ProgramContext ctx) { }
+    @Override public void exitProgram(AjvmParser.ProgramContext ctx) {
+        for (String name : instructionsWaitingOn.keySet()) {
+            if (name.startsWith(".")) {
+                if (!constantOffsetFor.containsKey(name))
+                    throw new RuntimeException("Undefined method " + name);
+
+                short dotnameOffset = constantOffsetFor.get(name);
+                for (Instruction instr : instructionsWaitingOn.get(name)) {
+                    instr.getOperands().set(0, (byte) (dotnameOffset >> 8));
+                    instr.getOperands().set(1, (byte) dotnameOffset);
+                }
+            }
+        }
+    }
 
     /**
      * Add value to program constant area and (:name -> offset) entry to translator table.
@@ -111,11 +124,32 @@ public class Translator extends AjvmBaseListener {
     }
 
     /**
-     * {@inheritDoc} TODO Solve goto labels and push method
+     * Solve label offsets.
      *
-     * <p>The default implementation does nothing.</p>
+     * @param ctx The rule invocation context for parsing.
      */
-    @Override public void exitMainDeclaration(AjvmParser.MainDeclarationContext ctx) { }
+    @Override public void exitMainDeclaration(AjvmParser.MainDeclarationContext ctx) {
+        solveLabelOffsets();
+    }
+
+    private void solveLabelOffsets() {
+        for (String name : instructionsWaitingOn.keySet()) {
+            if (!name.startsWith(".")) {
+                if (!labelWordFor.containsKey(name))
+                    throw new RuntimeException("Undefined label " + name);
+
+                short labelWord = labelWordFor.get(name);
+                for (Instruction instr : instructionsWaitingOn.get(name)) {
+                    short instructionWord = (short) ((instr.getOperands().get(0) << 8) + instr.getOperands().get(1));
+                    short labelOffset = (short) (labelWord - instructionWord);
+                    instr.getOperands().set(0, (byte) (labelOffset >> 8));
+                    instr.getOperands().set(1, (byte) labelOffset);
+                }
+
+                labelWordFor.remove(name);
+            }
+        }
+    }
 
     /**
      * Add starting address to program constant area and (:name -> offset) entry to translator table.
@@ -138,11 +172,13 @@ public class Translator extends AjvmBaseListener {
     }
 
     /**
-     * {@inheritDoc} TODO Solve goto labels and push method
+     * Solve label offsets.
      *
-     * <p>The default implementation does nothing.</p>
+     * @param ctx The rule invocation context for parsing.
      */
-    @Override public void exitMethodDeclaration(AjvmParser.MethodDeclarationContext ctx) { }
+    @Override public void exitMethodDeclaration(AjvmParser.MethodDeclarationContext ctx) {
+        solveLabelOffsets();
+    }
 
     /**
      * Add (:name -> offset) entry to translator table and adjust method parameter size.
@@ -250,8 +286,12 @@ public class Translator extends AjvmBaseListener {
                 wide.setOpcode(ProgramUtils.opcodeFor("WIDE"));
                 currentWordInMethodArea += 1;
                 currentMethod.getInstructions().add(wide);
-                instr.getOperands().add((byte) 0);
-                instr.getOperands().add((byte) 0);
+
+                if (!variableOffsetFor.containsKey(name))
+                    throw new RuntimeException("Variable or parameter " + name + " is undefined");
+
+                instr.getOperands().add((byte) (variableOffsetFor.get(name) >> 8));
+                instr.getOperands().add(variableOffsetFor.get(name).byteValue());
             } else {
                 // A bit hacky: remember the position in the instruction operand field
                 instr.getOperands().add((byte) (currentWordInMethodArea >> 24));
@@ -273,15 +313,16 @@ public class Translator extends AjvmBaseListener {
      * @param ctx The rule invocation context for parsing.
      */
     @Override public void enterByteNameByteValueInstruction(AjvmParser.ByteNameByteValueInstructionContext ctx) {
+        Instruction instr = new Instruction();
         String mnemonic = ctx.BYTE_NAME_BYTE_VALUE_MNEMONIC().getText();
+        instr.setOpcode(ProgramUtils.opcodeFor(mnemonic));
+
         String name = ctx.NAME().getText();
 
         if (!variableOffsetFor.containsKey(name))
             throw new RuntimeException("Variable or parameter " + name + " is undefined");
 
-        Instruction instr = new Instruction();
-        instr.setOpcode(ProgramUtils.opcodeFor(mnemonic));
-        instr.getOperands().add(variableOffsetFor.get(ctx.NAME().getText()).byteValue());
+        instr.getOperands().add(variableOffsetFor.get(name).byteValue());
         instr.getOperands().add((byte) ProgramUtils.parseIntOrHex(ctx.VALUE().getText()));
         currentWordInMethodArea += 3;
         currentMethod.getInstructions().add(instr);
@@ -293,16 +334,16 @@ public class Translator extends AjvmBaseListener {
      * @param ctx The rule invocation context for parsing.
      */
     @Override public void enterByteNameInstruction(AjvmParser.ByteNameInstructionContext ctx) {
-        String mnemonic = ctx.BYTE_NAME_MNEMONIC().getText();
-        String name = ctx.NAME().getText();
         Instruction instr = new Instruction();
+        String mnemonic = ctx.BYTE_NAME_MNEMONIC().getText();
         instr.setOpcode(ProgramUtils.opcodeFor(mnemonic));
-        instr.getOperands().add((byte) 0);
 
-        if (!instructionsWaitingOn.containsKey(name))
-            instructionsWaitingOn.put(name, new LinkedList<>());
-        instructionsWaitingOn.get(name).add(instr);
+        String name = ctx.NAME().getText();
 
+        if (!variableOffsetFor.containsKey(name))
+            throw new RuntimeException("Variable or parameter " + name + " is undefined");
+
+        instr.getOperands().add(variableOffsetFor.get(name).byteValue());
         currentWordInMethodArea += 2;
         currentMethod.getInstructions().add(instr);
     }
