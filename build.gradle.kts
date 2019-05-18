@@ -49,7 +49,7 @@ dependencies {
 
 application {
     // Define the main class for the application
-    mainClassName = "me.albmoriconi.ajvm.App"
+    mainClassName = "me.albmoriconi.ajvm.cli.Application"
 }
 
 tasks.generateGrammarSource {
