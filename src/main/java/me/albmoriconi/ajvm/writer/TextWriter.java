@@ -59,9 +59,11 @@ public class TextWriter extends BaseProgramWriter {
         // Match an empty string that has the last match (\G) followed by 32 characters (32.) before it ((?<= ))
         // Split according to matches
         // Join with newlines
-        writer.write(String.join("\n", program.getConstantAreaAsString().split("(?<=\\G32.)")));
+        writer.write(String.join("\n",
+                program.getConstantAreaAsString().split("(?<=\\G................................)")) + "\n");
         writer.write("@" + methodAreaStart + "\n");
-        writer.write(String.join("\n", program.getMethodAreaAsString().split("(?<=\\G8.)")));
+        writer.write(String.join("\n",
+                program.getMethodAreaAsString().split("(?<=\\G........)")) + "\n");
         writer.flush();
     }
 }
