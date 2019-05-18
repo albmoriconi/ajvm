@@ -130,6 +130,7 @@ public class Translator extends AjvmBaseListener {
      */
     @Override public void exitMainDeclaration(AjvmParser.MainDeclarationContext ctx) {
         solveLabelOffsets();
+        translatedProgram.getMethods().add(currentMethod);
     }
 
     private void solveLabelOffsets() {
@@ -178,6 +179,7 @@ public class Translator extends AjvmBaseListener {
      */
     @Override public void exitMethodDeclaration(AjvmParser.MethodDeclarationContext ctx) {
         solveLabelOffsets();
+        translatedProgram.getMethods().add(currentMethod);
     }
 
     /**
