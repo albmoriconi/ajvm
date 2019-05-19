@@ -147,6 +147,7 @@ public class Translator extends AjvmBaseListener {
                     instr.getOperands().set(1, (byte) labelOffset);
                 }
 
+                instructionsWaitingOn.remove(name);
                 labelWordFor.remove(name);
             }
         }

@@ -63,7 +63,7 @@ public class Application {
             InputStream inputStream = new FileInputStream(inFile);
             charStream = CharStreams.fromStream(inputStream);
         } catch (IOException ex) {
-            System.out.println("mal: No such file: " + inFile);
+            System.out.println("ajvm: No such file: " + inFile);
             System.exit(1);
         }
 
