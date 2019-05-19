@@ -38,11 +38,11 @@ import java.util.Map;
 public class Translator extends AjvmBaseListener {
 
     private Program translatedProgram;
-    private int currentWordInMethodArea;
+    private int currentByteInMethodArea;
     private Method currentMethod;
     private Map<String, Short> constantOffsetFor;
     private Map<String, Short> variableOffsetFor;
-    private Map<String, Short> labelWordFor;
+    private Map<String, Short> labelByteFor;
     private Map<String, List<Instruction>> instructionsWaitingOn;
 
     /**
@@ -50,11 +50,11 @@ public class Translator extends AjvmBaseListener {
      */
     public Translator() {
         translatedProgram = new Program();
-        currentWordInMethodArea = 0;
+        currentByteInMethodArea = 0;
         currentMethod = new Method();
         constantOffsetFor = new HashMap<>();
         variableOffsetFor = new HashMap<>();
-        labelWordFor = new HashMap<>();
+        labelByteFor = new HashMap<>();
         instructionsWaitingOn = new HashMap<>();
     }
 
@@ -115,12 +115,12 @@ public class Translator extends AjvmBaseListener {
      */
     @Override public void enterMainDeclaration(AjvmParser.MainDeclarationContext ctx) {
         constantOffsetFor.put(".main", (short) translatedProgram.getConstantValues().size());
-        translatedProgram.getConstantValues().add(currentWordInMethodArea);
+        translatedProgram.getConstantValues().add(currentByteInMethodArea);
 
-        currentWordInMethodArea += 2;
+        currentByteInMethodArea += 4;
         currentMethod = new Method();
         variableOffsetFor = new HashMap<>();
-        labelWordFor = new HashMap<>();
+        labelByteFor = new HashMap<>();
     }
 
     /**
@@ -134,23 +134,28 @@ public class Translator extends AjvmBaseListener {
     }
 
     private void solveLabelOffsets() {
+        Map<String, List<Instruction>> filteredInstructionsWaitingOn = new HashMap<>();
+
         for (String name : instructionsWaitingOn.keySet()) {
             if (!name.startsWith(".")) {
-                if (!labelWordFor.containsKey(name))
+                if (!labelByteFor.containsKey(name))
                     throw new RuntimeException("Undefined label " + name);
 
-                short labelWord = labelWordFor.get(name);
+                short labelByte = labelByteFor.get(name);
                 for (Instruction instr : instructionsWaitingOn.get(name)) {
                     short instructionWord = (short) ((instr.getOperands().get(0) << 8) + instr.getOperands().get(1));
-                    short labelOffset = (short) (labelWord - instructionWord);
+                    short labelOffset = (short) (labelByte - instructionWord);
                     instr.getOperands().set(0, (byte) (labelOffset >> 8));
                     instr.getOperands().set(1, (byte) labelOffset);
                 }
 
-                instructionsWaitingOn.remove(name);
-                labelWordFor.remove(name);
+                labelByteFor.remove(name);
+            } else {
+                filteredInstructionsWaitingOn.put(name, instructionsWaitingOn.get(name));
             }
         }
+
+        instructionsWaitingOn = filteredInstructionsWaitingOn;
     }
 
     /**
@@ -165,12 +170,12 @@ public class Translator extends AjvmBaseListener {
             throw new RuntimeException("Method " + dotname + " is already defined");
 
         constantOffsetFor.put(dotname, (short) translatedProgram.getConstantValues().size());
-        translatedProgram.getConstantValues().add(currentWordInMethodArea);
+        translatedProgram.getConstantValues().add(currentByteInMethodArea);
 
-        currentWordInMethodArea += 2;
+        currentByteInMethodArea += 4;
         currentMethod = new Method();
         variableOffsetFor = new HashMap<>();
-        labelWordFor = new HashMap<>();
+        labelByteFor = new HashMap<>();
     }
 
     /**
@@ -194,7 +199,7 @@ public class Translator extends AjvmBaseListener {
         if (variableOffsetFor.containsKey(name))
             throw new RuntimeException("Parameter " + name + " is already defined");
 
-        variableOffsetFor.put(name, currentMethod.getParametersSize());
+        variableOffsetFor.put(name, (short) (currentMethod.getParametersSize() - 1));
 
         currentMethod.setParametersSize((short) (currentMethod.getParametersSize() + 1));
     }
@@ -210,7 +215,7 @@ public class Translator extends AjvmBaseListener {
         if (variableOffsetFor.containsKey(name))
             throw new RuntimeException("Variable " + name + " is already defined");
 
-        variableOffsetFor.put(name, (short) (currentMethod.getParametersSize() + currentMethod.getVariableSize()));
+        variableOffsetFor.put(name, (short) (currentMethod.getParametersSize() - 1 + currentMethod.getVariableSize()));
 
         currentMethod.setVariableSize((short) (currentMethod.getVariableSize() + 1));
     }
@@ -223,10 +228,10 @@ public class Translator extends AjvmBaseListener {
     @Override public void enterLabel(AjvmParser.LabelContext ctx) {
         String name = ctx.NAME().getText();
 
-        if (labelWordFor.containsKey(name))
+        if (labelByteFor.containsKey(name))
             throw new RuntimeException("Label " + name + " is already defined");
 
-        labelWordFor.put(name, (short) currentWordInMethodArea);
+        labelByteFor.put(name, (short) currentByteInMethodArea);
     }
 
     /**
@@ -238,13 +243,13 @@ public class Translator extends AjvmBaseListener {
         String mnemonic = ctx.NO_OPERAND_MNEMONIC().getText();
         Instruction instr = new Instruction();
         instr.setOpcode(ProgramUtils.opcodeFor(mnemonic));
-        currentWordInMethodArea += 1;
+        currentByteInMethodArea += 1;
 
         // HALT is a no operand instruction but translates as a GOTO (short value)
         if (mnemonic.equals("HALT")) {
             instr.getOperands().add((byte) 0);
             instr.getOperands().add((byte) 0);
-            currentWordInMethodArea += 2;
+            currentByteInMethodArea += 2;
         }
 
         currentMethod.getInstructions().add(instr);
@@ -260,7 +265,7 @@ public class Translator extends AjvmBaseListener {
         Instruction instr = new Instruction();
         instr.setOpcode(ProgramUtils.opcodeFor(mnemonic));
         instr.getOperands().add((byte) ProgramUtils.parseIntOrHex(ctx.VALUE().getText()));
-        currentWordInMethodArea += 2;
+        currentByteInMethodArea += 2;
         currentMethod.getInstructions().add(instr);
     }
 
@@ -287,7 +292,7 @@ public class Translator extends AjvmBaseListener {
             if (mnemonic.equals("ILOAD") || mnemonic.equals("ISTORE")) {
                 Instruction wide = new Instruction();
                 wide.setOpcode(ProgramUtils.opcodeFor("WIDE"));
-                currentWordInMethodArea += 1;
+                currentByteInMethodArea += 1;
                 currentMethod.getInstructions().add(wide);
 
                 if (!variableOffsetFor.containsKey(name))
@@ -297,8 +302,8 @@ public class Translator extends AjvmBaseListener {
                 instr.getOperands().add(variableOffsetFor.get(name).byteValue());
             } else {
                 // A bit hacky: remember the position in the instruction operand field
-                instr.getOperands().add((byte) (currentWordInMethodArea >> 24));
-                instr.getOperands().add((byte) currentWordInMethodArea);
+                instr.getOperands().add((byte) (currentByteInMethodArea >> 24));
+                instr.getOperands().add((byte) currentByteInMethodArea);
             }
 
             if (!instructionsWaitingOn.containsKey(name))
@@ -306,7 +311,7 @@ public class Translator extends AjvmBaseListener {
             instructionsWaitingOn.get(name).add(instr);
         }
 
-        currentWordInMethodArea += 3;
+        currentByteInMethodArea += 3;
         currentMethod.getInstructions().add(instr);
     }
 
@@ -327,7 +332,7 @@ public class Translator extends AjvmBaseListener {
 
         instr.getOperands().add(variableOffsetFor.get(name).byteValue());
         instr.getOperands().add((byte) ProgramUtils.parseIntOrHex(ctx.VALUE().getText()));
-        currentWordInMethodArea += 3;
+        currentByteInMethodArea += 3;
         currentMethod.getInstructions().add(instr);
     }
 
@@ -347,7 +352,7 @@ public class Translator extends AjvmBaseListener {
             throw new RuntimeException("Variable or parameter " + name + " is undefined");
 
         instr.getOperands().add(variableOffsetFor.get(name).byteValue());
-        currentWordInMethodArea += 2;
+        currentByteInMethodArea += 2;
         currentMethod.getInstructions().add(instr);
     }
 
@@ -370,7 +375,7 @@ public class Translator extends AjvmBaseListener {
         instr.getOperands().add((byte) 0);
         instr.getOperands().add((byte) 0);
 
-        currentWordInMethodArea += 3;
+        currentByteInMethodArea += 3;
         currentMethod.getInstructions().add(instr);
     }
 
