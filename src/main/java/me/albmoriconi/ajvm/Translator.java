@@ -199,7 +199,7 @@ public class Translator extends AjvmBaseListener {
         if (variableOffsetFor.containsKey(name))
             throw new RuntimeException("Parameter " + name + " is already defined");
 
-        variableOffsetFor.put(name, (short) (currentMethod.getParametersSize() - 1));
+        variableOffsetFor.put(name, (short) (currentMethod.getParametersSize()));
 
         currentMethod.setParametersSize((short) (currentMethod.getParametersSize() + 1));
     }
@@ -215,7 +215,7 @@ public class Translator extends AjvmBaseListener {
         if (variableOffsetFor.containsKey(name))
             throw new RuntimeException("Variable " + name + " is already defined");
 
-        variableOffsetFor.put(name, (short) (currentMethod.getParametersSize() - 1 + currentMethod.getVariableSize()));
+        variableOffsetFor.put(name, (short) (currentMethod.getParametersSize() + currentMethod.getVariableSize()));
 
         currentMethod.setVariableSize((short) (currentMethod.getVariableSize() + 1));
     }
