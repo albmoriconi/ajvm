@@ -56,6 +56,9 @@ public class Translator extends AjvmBaseListener {
         variableOffsetFor = new HashMap<>();
         labelByteFor = new HashMap<>();
         instructionsWaitingOn = new HashMap<>();
+
+        // Keep the space for :.main
+        translatedProgram.getConstantValues().add(0);
     }
 
     /**
@@ -114,8 +117,8 @@ public class Translator extends AjvmBaseListener {
      * @param ctx The rule invocation context for parsing.
      */
     @Override public void enterMainDeclaration(AjvmParser.MainDeclarationContext ctx) {
-        constantOffsetFor.put(".main", (short) translatedProgram.getConstantValues().size());
-        translatedProgram.getConstantValues().add(currentByteInMethodArea);
+        constantOffsetFor.put(".main", (short) 0);
+        translatedProgram.getConstantValues().set(0, currentByteInMethodArea);
 
         currentByteInMethodArea += 4;
         currentMethod = new Method();
