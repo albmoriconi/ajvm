@@ -41,8 +41,8 @@ import java.io.InputStream;
  */
 public class Application {
 
-    private static final int DEFAULT_CONSTANT_AREA_START = 0;
-    private static final int DEFAULT_METHOD_AREA_START = 20000;
+    private static final int DEFAULT_CONSTANT_AREA_START = 512;
+    private static final int DEFAULT_METHOD_AREA_START = 0;
     private static final String DEFAULT_OUT_TEXT = "a.txt";
     private static final String DEFAULT_OUT_BINARY = "a.out";
 

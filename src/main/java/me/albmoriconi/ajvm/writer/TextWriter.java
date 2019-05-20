@@ -56,11 +56,11 @@ public class TextWriter extends BaseProgramWriter {
     @Override public void write(Program program, int constantAreaStart, int methodAreaStart) throws IOException {
         Objects.requireNonNull(program, "Unexpected null reference in TextWriter#write");
         writer.write("@" + constantAreaStart + "\n");
-        // Match an empty string that has the last match (\G) followed by 32 characters (32.) before it ((?<= ))
+        // Match an empty string that has the last match (\G) followed by 8 characters (........) before it ((?<= ))
         // Split according to matches
         // Join with newlines
         writer.write(String.join("\n",
-                program.getConstantAreaAsString().split("(?<=\\G................................)")) + "\n");
+                program.getConstantAreaAsString().split("(?<=\\G........)")) + "\n");
         writer.write("@" + methodAreaStart + "\n");
         writer.write(String.join("\n",
                 program.getMethodAreaAsString().split("(?<=\\G........)")) + "\n");
