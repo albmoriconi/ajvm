@@ -22,6 +22,8 @@ import me.albmoriconi.ajvm.program.Program;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -56,14 +58,36 @@ public class TextWriter extends BaseProgramWriter {
     @Override public void write(Program program, int constantAreaStart, int methodAreaStart) throws IOException {
         Objects.requireNonNull(program, "Unexpected null reference in TextWriter#write");
         writer.write("@" + constantAreaStart + "\n");
-        // Match an empty string that has the last match (\G) followed by 8 characters (........) before it ((?<= ))
+        // Match an empty string that has the last match (\G) followed by 32 characters (........) before it ((?<= ))
         // Split according to matches
         // Join with newlines
         writer.write(String.join("\n",
-                program.getConstantAreaAsString().split("(?<=\\G........)")) + "\n");
+                program.getConstantAreaAsString().split("(?<=\\G................................)")) + "\n");
         writer.write("@" + methodAreaStart + "\n");
-        writer.write(String.join("\n",
-                program.getMethodAreaAsString().split("(?<=\\G........)")) + "\n");
+
+        String[] methodAreaBytes = program.getMethodAreaAsString().split("(?<=\\G........)");
+        List<String> methodAreaWords = new ArrayList<>();
+        for (int i = 0; i < methodAreaBytes.length; i += 4) {
+            String aWord = "";
+
+            if (i + 3 < methodAreaBytes.length)
+                aWord += methodAreaBytes[i + 3];
+            else
+                aWord += "00000000";
+            if (i + 2 < methodAreaBytes.length)
+                aWord += methodAreaBytes[i + 2];
+            else
+                aWord += "00000000";
+            if (i + 1 < methodAreaBytes.length)
+                aWord += methodAreaBytes[i + 1];
+            else
+                aWord += "00000000";
+            aWord += methodAreaBytes[i];
+
+            methodAreaWords.add(aWord);
+        }
+
+        writer.write(String.join("\n", methodAreaWords) + "\n");
         writer.flush();
     }
 }
