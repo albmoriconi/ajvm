@@ -80,6 +80,10 @@ public class ProgramUtils {
                 return (byte) parseIntOrHex("0xB9");
             case "WIDE":
                 return (byte) parseIntOrHex("0xCF");
+            case "GSTORE":
+                return (byte) parseIntOrHex("0xD0");
+            case "GLOAD":
+                return (byte) parseIntOrHex("0xDC");
             case "NOP":
             default:
                 return 0;

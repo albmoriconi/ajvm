@@ -77,6 +77,8 @@ SHORT_NAME_MNEMONIC : 'GOTO'
                     | 'IFLT'
                     | 'IF_ICMPEQ'
                     | 'LDC_W'
+                    | 'GSTORE'
+                    | 'GLOAD'
                     ;
 
 BYTE_NAME_MNEMONIC : 'ILOAD' | 'ISTORE';

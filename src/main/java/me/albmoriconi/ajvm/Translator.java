@@ -284,7 +284,7 @@ public class Translator extends AjvmBaseListener {
         instr.setOpcode(ProgramUtils.opcodeFor(mnemonic));
 
         // Special case: NAME refers to a constant, can be solved now
-        if (mnemonic.equals("LDC_W")) {
+        if (mnemonic.equals("LDC_W") || mnemonic.equals("GSTORE") || mnemonic.equals("GLOAD")) {
             if (!constantOffsetFor.containsKey(name))
                 throw new RuntimeException("Constant " + name + " is undefined");
             Short offset = constantOffsetFor.get(name);
