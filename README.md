@@ -21,6 +21,7 @@ the `build` task:
 
 ```sh
 $ git clone https://github.com/albmoriconi/ajvm.git
+$ cd ajvm
 $ ./gradlew build
 ```
 
